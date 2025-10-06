@@ -1,0 +1,274 @@
+//GANTRY MOVEMENT CODE
+//GANTRY MOVEMENT CODE
+//GANTRY MOVEMENT CODE
+
+int Route_Movement_key [8] = {0, 1, 2, 3, 4, 5, 6, 7}; //Array to cycle through that will determine the desired path to move along. 
+int incomingData; //Placeholder value for data coming in from the Arduino Mega.
+int Path_Selection; //Placeholder value for selection from Movement key.
+int N23const = 635; //0.001575 in/loop OR approx 635 loops/in
+
+const int step_x = 2;
+const int dir_x = 5;
+
+const int step_y = 3;
+const int dir_y = 6;
+
+const int step_z = 4;
+const int dir_z = 7;
+
+const int step_a = 12;
+const int dir_a = 13;
+
+void setup() {
+  Serial.begin(9600); //Setting baud rate for serial monitor.
+  pinMode(step_x, OUTPUT);
+  pinMode(dir_x, OUTPUT);
+  pinMode(step_y, OUTPUT);
+  pinMode(dir_y, OUTPUT);
+  pinMode(step_z, OUTPUT);
+  pinMode(dir_z, OUTPUT);
+  pinMode(step_a, OUTPUT);
+  pinMode(dir_a, OUTPUT);
+}
+
+void loop() {
+  if (Serial.available () > 0) {
+    incomingData = Serial.read();
+    Serial.println(incomingData);
+
+    Path_Selection = Route_Movement_key[incomingData];
+    delay(20538+3000); //Delay for wire priming.  NEMA17: (3+3ms)*3423 loops = 20538ms.  3000ms (see 'Dispensing' line 43).
+    Movement(Path_Selection);
+  }
+}
+
+void Movement(int Path_Selection) {
+
+  // !!!THIS IS FOR RE-CENTERING THE GANTRY!!!
+  if(Path_Selection == 3) {
+    for(int x = 0; x < N23const*3; x++) {  // 3in from Y=0
+      digitalWrite(dir_y, HIGH);
+      digitalWrite(step_y, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_y, LOW);
+      delayMicroseconds(1000);
+    }
+  }
+
+  // C1 -> 1
+  if(Path_Selection == 0) {
+    // FORWARD DIRECTION
+    for(int x = 0; x < N23const*30; x++) {  // 30in
+      digitalWrite(dir_y, HIGH);
+      digitalWrite(step_y, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_y, LOW);
+      delayMicroseconds(1000);
+    }
+    delay(1000);
+
+    // RIGHT FROM CENTER
+    for(int x = 0; x < N23const*12; x++) {  // 12in
+      digitalWrite(dir_x, LOW);
+      digitalWrite(step_x, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_x, LOW);
+      delayMicroseconds(1000);
+    }
+    delay(1000);
+
+    // BACKWARDS BEFORE CUT
+    for(int x = 0; x < N23const*(12-6.13); x++) {  // -6.13in to begin wire ending. See line 111.
+      digitalWrite(dir_y, LOW);
+      digitalWrite(step_y, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_y, LOW);
+      delayMicroseconds(1000);
+    }
+    delay(1000);
+
+    // !!!CUTTER DOWN LOOP!!!
+    for(int x = 0; x < 390*4; x++) {    // *4 multiplier for Microstep Driver. Could prob set Driver to 1-step at 390.
+      digitalWrite(dir_z, LOW);
+      digitalWrite(step_z, HIGH);
+      delayMicroseconds(3000);
+      digitalWrite(step_z, LOW);
+      delayMicroseconds(3000);
+    }
+    delay(1000);
+
+    // !!!CUTTER UP LOOP!!!
+    for(int x = 0; x < 390*4; x++) {
+      digitalWrite(dir_z, HIGH);
+      digitalWrite(step_z, HIGH);
+      delayMicroseconds(3000);
+      digitalWrite(step_z, LOW);
+      delayMicroseconds(3000);
+    }
+    delay(1000);
+
+    // BACKWARDS AFTER CUT
+    for(int x = 0; x < N23const*(18+6.13); x++) {   // +6.13in to drag end of wire out of rear channel.
+      digitalWrite(dir_y, LOW);
+      digitalWrite(step_y, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_y, LOW);
+      delayMicroseconds(1000);
+    }
+    delay(1000);
+
+    // LEFT TOWARDS STARTING POINT
+    for(int x = 0; x < N23const*12; x++) {
+      digitalWrite(dir_x, HIGH);
+      digitalWrite(step_x, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_x, LOW);
+      delayMicroseconds(1000);
+    }
+    delay(1000);
+  }
+
+  // C1 -> 2
+  if(Path_Selection == 1) {
+    // FORWARD DIRECTION
+    for(int x = 0; x < N23const*30; x++) {
+      digitalWrite(dir_y, HIGH);
+      digitalWrite(step_y, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_y, LOW);
+      delayMicroseconds(1000);
+    }    
+    delay(1000);
+
+    // LEFT FROM CENTER
+    for(int x = 0; x < N23const*12; x++) {
+      digitalWrite(dir_x, HIGH);
+      digitalWrite(step_x, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_x, LOW);
+      delayMicroseconds(1000);
+    }
+    delay(1000);
+
+    // BACKWARDS BEFORE CUT
+    for(int x = 0; x < N23const*(12-6.13); x++) {  // -6.13in to begin wire ending. See line 184.
+      digitalWrite(dir_y, LOW);
+      digitalWrite(step_y, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_y, LOW);
+      delayMicroseconds(1000);
+    }
+    delay(1000);
+    
+    // !!!CUTTER DOWN LOOP!!!
+     for(int x = 0; x < 390*4; x++) {
+      digitalWrite(dir_z, LOW);
+      digitalWrite(step_z, HIGH);
+      delayMicroseconds(3000);
+      digitalWrite(step_z, LOW);
+      delayMicroseconds(3000);
+    }
+    delay(1000);
+
+    // !!!CUTTER UP LOOP!!!
+    for(int x = 0; x < 390*4; x++) {
+      digitalWrite(dir_z, HIGH);
+      digitalWrite(step_z, HIGH);
+      delayMicroseconds(3000);
+      digitalWrite(step_z, LOW);
+      delayMicroseconds(3000);
+    }
+    delay(1000);
+
+    // BACKWARDS AFTER CUT
+    for(int x = 0; x < N23const*(18+6.13); x++) {   // +6.13in to drag end of wire out of rear channel.
+      digitalWrite(dir_y, LOW);
+      digitalWrite(step_y, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_y, LOW);
+      delayMicroseconds(1000);
+    }
+    delay(1000);
+
+    // RIGHT TOWARDS STARTING POINT
+    for(int x = 0; x < N23const*12; x++) {
+      digitalWrite(dir_x, LOW);
+      digitalWrite(step_x, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_x, LOW);
+      delayMicroseconds(1000);
+    }
+    delay(1000);
+  }
+
+  // C1 -> 3
+  if(Path_Selection == 2) {
+    // FORWARD DIRECTION
+    for(int x = 0; x < N23const*(36-6.13); x++) {   // -6.13in to begin wire ending. See line 235.
+      digitalWrite(dir_y, HIGH);
+      digitalWrite(step_y, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_y, LOW);
+      delayMicroseconds(1000);
+    }
+    delay(1000);
+
+    // !!!CUTTER DOWN LOOP!!!
+    for(int x = 0; x < 390*4; x++) {
+      digitalWrite(dir_z, LOW);
+      digitalWrite(step_z, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_z, LOW);
+      delayMicroseconds(1000);
+
+    // !!!CUTTER UP LOOP!!!
+    for(int x = 0; x < 390*4; x++) {
+      digitalWrite(dir_z, HIGH);
+      digitalWrite(step_z, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_z, LOW);
+      delayMicroseconds(1000);
+    }
+    delay(1000);
+
+    // CONTINUE FORWARD DIRECTION
+    for(int x = 0; x < N23const*6.13; x++) {   // 6.13in to drag end of wire out of rear channel.
+      digitalWrite(dir_y, HIGH);
+      digitalWrite(step_y, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_y, LOW);
+      delayMicroseconds(1000);
+    }
+    delay(1000);
+
+    // RIGHT FROM CENTER (allows wire to pull from rear channel)
+    for(int x = 0; x < N23const*2; x++) {   // 2in
+      digitalWrite(dir_x, LOW);
+      digitalWrite(step_x, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_x, LOW);
+      delayMicroseconds(1000);
+    }
+    delay(1000);
+
+    // BACKWARDS TO STARTING LINE
+    for(int x = 0; x < N23const*36; x++) {  // 36in
+      digitalWrite(dir_y, LOW);
+      digitalWrite(step_y, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_y, LOW);
+      delayMicroseconds(1000);
+    }
+    delay(1000);
+
+    // LEFT TOWARDS START POSITION
+    for(int x = 0; x < N23const*2; x++) {   //  2in
+      digitalWrite(dir_x, HIGH);
+      digitalWrite(step_x, HIGH);
+      delayMicroseconds(1000);
+      digitalWrite(step_x, LOW);
+      delayMicroseconds(1000);
+    }
+    delay(1000);
+  }
+  }}
